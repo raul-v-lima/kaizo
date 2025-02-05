@@ -51,6 +51,8 @@ func (r *MonRepositoryPostgres) GetByID(id int) (domain.Mon, error) {
 func (r *MonRepositoryPostgres) AddMon(mon domain.Mon) error {
 	// Inicializando o gerador de números aleatórios
 	rand.NewSource(uint64(time.Now().UnixNano()))
+	// randonType := domain.RandomMoveType()
+	// fmt.Sprintf(" %s", randonType)
 
 	mon.Name = domain.MNames[rand.Intn(len(domain.MNames))]
 	mon.Type1 = domain.Types[rand.Intn(len(domain.Types))]
@@ -68,14 +70,20 @@ func (r *MonRepositoryPostgres) AddMon(mon domain.Mon) error {
 	mon.Nature = domain.Natures[rand.Intn(len(domain.Natures))].Name
 	mon.Ability = domain.Abilities[rand.Intn(len(domain.Abilities))].Name
 
-	mon.Move1 = domain.Moves[mon.Type1.Name][rand.Intn(len(domain.Moves[mon.Type1.Name]))]
-	mon.Move2 = domain.Moves[mon.Type1.Name][rand.Intn(len(domain.Moves[mon.Type1.Name]))]
-	mon.Move3 = domain.Moves[mon.Type1.Name][rand.Intn(len(domain.Moves[mon.Type1.Name]))]
-	mon.Move4 = domain.Moves[mon.Type1.Name][rand.Intn(len(domain.Moves[mon.Type1.Name]))]
-	// mon.Move1 = domain.Moves[mon.Type1.Name][rand.Intn(len(domain.Moves[mon.Type1.Name]))]
-	// mon.Move2 = domain.Moves[mon.Move2.Type][rand.Intn(len(domain.Moves[mon.Move2.Type]))]
-	// mon.Move3 = domain.Moves[mon.Move3.Type][rand.Intn(len(domain.Moves[mon.Move3.Type]))]
-	// mon.Move4 = domain.Moves[mon.Move4.Type][rand.Intn(len(domain.Moves[mon.Move4.Type]))]
+	randomMoveList := domain.GetRandonMoveList()
+	randomMove := domain.RandomMove(randomMoveList)
+
+	mon.Move1 = randomMove
+	mon.Move2 = randomMove
+	mon.Move3 = randomMove
+	mon.Move4 = randomMove
+
+	//fmt.Sprintf("%v", randomMove.Name)
+	// var randomChave = rand.Intn(len(domain.Moves))
+	// var radnomValor = rand.Intn(len(domain.Moves[randomChave]))
+	// mon.Move1 = domain.Moves[1][6]
+
+	// mon.Move2 = domain.Moves[randomChave][radnomValor]
 
 	_, err := r.db.Exec("INSERT INTO mons (id, name, bst, hp, atk, def, spa, spd, spe, lvl, type, type2, nature, ability, move1, move2, move3, move4, immunity, weakness, resistency, updatededAt, createdAt, baseEvo, secondEvo, thirdEvo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)", mon.ID, mon.Name, mon.Bst, mon.Hp, mon.Atk, mon.Def, mon.Spa, mon.Spd, mon.Spe, mon.Lvl, mon.Type1, mon.Type2, mon.Nature, mon.Ability, mon.Move1, mon.Move2, mon.Move3, mon.Move4, mon.Weakness, mon.Resistency, mon.UpdatededAt, mon.CreatedAt, mon.BaseEvo, mon.SecondEvo, mon.ThirdEvo)
 	if err != nil {

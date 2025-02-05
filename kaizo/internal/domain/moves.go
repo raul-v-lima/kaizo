@@ -1,5 +1,9 @@
 package domain
 
+import (
+	"math/rand"
+)
+
 type Move struct {
 	Name     string `json:"name"`
 	Type     string `json:"type"`
@@ -28,6 +32,7 @@ var Moves = map[string][]Move{
 	"Steel":    SteelMoves,
 	"Fairy":    FairyMoves,
 	"Fighting": FightingMoves,
+	"Normal":   NormalMoves,
 }
 
 var IceMoves = []Move{
@@ -1452,4 +1457,23 @@ var NormalMoves = []Move{
 		SpaOrNot: true,
 		Effect:   "30% chance	to paralyze	the target.",
 	},
+}
+
+func RandomMoveTypeKey() string {
+	keys := make([]string, 0, len(Moves))
+	for k := range Moves {
+		keys = append(keys, k)
+	}
+	return keys[rand.Intn(len(keys))]
+}
+
+func RandomMove(moveList []Move) Move {
+	randint := rand.Intn(len(moveList))
+	return moveList[randint]
+}
+
+func GetRandonMoveList() []Move {
+	randomKey := RandomMoveTypeKey()
+	randonMoveList := Moves[randomKey]
+	return randonMoveList
 }
