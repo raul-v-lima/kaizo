@@ -2,6 +2,7 @@ package domain
 
 import (
 	"math/rand"
+	"time"
 )
 
 type Move struct {
@@ -1460,19 +1461,24 @@ var NormalMoves = []Move{
 }
 
 func RandomMoveTypeKey() string {
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
 	keys := make([]string, 0, len(Moves))
 	for k := range Moves {
 		keys = append(keys, k)
 	}
-	return keys[rand.Intn(len(keys))]
+	return keys[r.Intn(len(keys))]
 }
 
 func RandomMove(moveList []Move) Move {
-	randint := rand.Intn(len(moveList))
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
+	randint := r.Intn(len(moveList))
 	return moveList[randint]
 }
 
 func GetRandonMoveList() []Move {
+
 	randomKey := RandomMoveTypeKey()
 	randonMoveList := Moves[randomKey]
 	return randonMoveList

@@ -1,26 +1,46 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"kaizo/kaizo/internal/infrastrucutre/persistence"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
+
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
 
-	connStr := "user=username dbname=kaizo sslmode=disable password=password"
-	db, err := sql.Open("postgres", connStr)
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Erro ao carregar o .env: %v\n", err)
+	}
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+	port := os.Getenv("DB_PORT")
+
+	appPort := os.Getenv("APP_PORT")
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=America/Sao_Paulo", host, user, password, dbname, port)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Erro ao conectar no banco de dados: %v", err)
 	}
-	defer db.Close()
 
-	monRepo := persistence.NewMonRepositoryPostgres(db)
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("Erro ao obter *sql.DB: %v", err)
+	}
+	monRepo := persistence.NewMonRepositoryPostgres(sqlDB)
+
 	err = monRepo.AddRandomMons(3)
 	if err != nil {
 		log.Fatalf("Erro ao adicionar os mons %v", err)
@@ -36,12 +56,13 @@ func main() {
 		fmt.Fprintf(w, "Bem-vindo ao Kaizo!")
 	})
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	db.AutoMigrate(&mons)
+
+	if appPort == "" {
+		appPort = "8080"
 	}
-	log.Printf("Servidor na porta %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	log.Printf("Servidor na porta %s", appPort)
+	if err := http.ListenAndServe(":"+appPort, nil); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor %v", err)
 	}
 
